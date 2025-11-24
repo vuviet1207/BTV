@@ -4,6 +4,9 @@
   const columns = window.EXPORT_COLUMNS || [];
   const rows = window.EXPORT_ROWS || [];
   const FROZEN = window.FROZEN_COUNT || 3;
+// ==== Cột đặc biệt cho Chung Kết ====
+const FINAL_STARS_IDX = columns.indexOf('Đối kháng'); // cột sao
+const FINAL_HEART_IDX = columns.indexOf('Tim');       // cột tim
 
   const head = document.getElementById('head-row');
   const filter = document.getElementById('filter-row');
@@ -33,20 +36,27 @@ const isTimeColAt = (idx) => {
 
 
   // --- Render header + filter ---
-  columns.forEach((name, i) => {
-    const th = document.createElement('th');
-    th.innerHTML = fmtHeader(name);
-    th.dataset.index = i;
-    // sort
-// sort (tắt sort ở cột Thời gian)
-if (isTimeColAt(i)) {
-  th.style.cursor = 'default';
-  th.title = 'Sắp xếp theo thời gian đã tắt';
-} else {
-  th.style.cursor = 'pointer';
-  th.addEventListener('click', () => toggleSort(i));
-}
-head.appendChild(th);
+columns.forEach((name, i) => {
+  const th = document.createElement('th');
+  th.innerHTML = fmtHeader(name);
+  th.dataset.index = i;
+
+  const isHeartCol = (i === FINAL_HEART_IDX);
+
+  // sort
+  // - Tắt sort ở cột Thời gian (export thường)
+  // - Và tắt luôn sort ở cột "Tim" (Chung Kết)
+  if (isTimeColAt(i) || isHeartCol) {
+    th.style.cursor = 'default';
+    th.title = isHeartCol
+      ? 'Sắp xếp theo Tim đã tắt'
+      : 'Sắp xếp theo thời gian đã tắt';
+  } else {
+    th.style.cursor = 'pointer';
+    th.addEventListener('click', () => toggleSort(i));
+  }
+
+  head.appendChild(th);
 
 
     // filter inputs
@@ -167,13 +177,20 @@ function compare(i, dir) {
     }
     if (primary !== 0) return primary;
 
-    // === TIE-BREAK: nếu đang sort ở CỘT ĐIỂM thì so tiếp THỜI GIAN của chính bài đó (cột kế bên) ===
+    // === TIE-BREAK cho Export thường: cột điểm -> thời gian ===
     if (isScoreCol(columns[i])) {
-      const timeIdx = i + 1;      // cột "Thời gian" luôn ngay sau cột Điểm
+      const timeIdx = i + 1;
       const ta = parseTimeToSec(a.r[timeIdx]);
       const tb = parseTimeToSec(b.r[timeIdx]);
-      // tie-break thời gian LUÔN tăng dần (ít giây hơn tốt hơn)
       if (ta !== tb) return ta - tb;
+    }
+
+    // === TIE-BREAK cho Chung Kết: sort Đối kháng thì so tiếp Tim ===
+    if (i === FINAL_STARS_IDX && FINAL_HEART_IDX !== -1) {
+      const ha = parseFloat(a.r[FINAL_HEART_IDX]) || 0;
+      const hb = parseFloat(b.r[FINAL_HEART_IDX]) || 0;
+      const heartDiff = (ha - hb) * dir;   // cùng chiều với sao: dir= -1 → nhiều Tim đứng trên
+      if (heartDiff !== 0) return heartDiff;
     }
 
     // Cuối cùng: giữ thứ tự ổn định
