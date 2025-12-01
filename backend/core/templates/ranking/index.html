@@ -1,7 +1,5 @@
-
+{% extends "base.html" %}
 {% load static %}
-<!doctype html>
-<html lang="vi">
 
 {% block head_extra %}
     <style>
@@ -21,15 +19,7 @@
             height: 100%;
         }
 
-        body {
-            margin: 0;
-            background: url("{% static 'pics/bk3.jpg' %}") no-repeat center center fixed;
-            background-size: cover;
-            color: var(--fg);
-            font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
+
 
         /* Desktop: vừa trang & KHÔNG cuộn dọc */
         @media (min-width: 1024px) {
@@ -551,12 +541,6 @@ td.num { font-weight: 600; }
     <div class="container">
         
 <div class="page-header">
-  <a href="{% url 'home' %}" class="back-link" title="Về trang chủ">
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    Trang chủ
-  </a>
 
   <h1 class="page-title">
     Xếp hạng{% if selected_ct %} — {{ selected_ct.ma }} · {{ selected_ct.tenCuocThi }}{% endif %}
